@@ -2,28 +2,36 @@
 
 ![NETFLIX](https://github.com/SomusekharJ/Netflix_Data_Analysis/blob/main/logo.png)
 
-Netflix Movies and TV Shows Data Analysis using SQL
+📊 Netflix Movies and TV Shows Data Analysis using SQL
 
-Overview
 
-This project offers an in-depth SQL-based analysis of Netflix’s content catalog, including both movies and TV shows. The main objective is to solve business problems and extract actionable insights using PostgreSQL queries and a clean data model.
+⸻
 
-Objectives
-	•	Analyze the distribution and popularity of content types.
-	•	Evaluate ratings, release patterns, and content distribution by geography.
-	•	Categorize and filter content based on genres, directors, actors, and keywords.
-	•	Leverage SQL techniques including CTE, Window Functions, and String Manipulation.
+📌 Overview
 
-Dataset
+This project performs a detailed analysis of Netflix’s Movies and TV Shows data using SQL (PostgreSQL). It addresses real-world business questions and provides deep insights using optimized queries. The data was imported into a PostgreSQL database and queried accordingly.
 
-The dataset used in this project is publicly available on Kaggle:
-	•	Source: Netflix Titles Dataset
-	•	Format: CSV
+⸻
 
-Schema (PostgreSQL)
+🎯 Objectives
+	•	Understand the content mix of Netflix (Movies vs TV Shows).
+	•	Identify rating trends across content types.
+	•	Analyze content by release year, country, genre, and duration.
+	•	Perform actor/director-based exploration.
+	•	Perform content categorization based on sensitive keywords.
+
+⸻
+
+🗃️ Dataset Source
+	•	Netflix Shows Dataset on Kaggle
+
+⸻
+
+🛠️ Schema
 
 DROP TABLE IF EXISTS netflix;
-CREATE TABLE netflix (
+CREATE TABLE netflix
+(
     show_id      VARCHAR(5),
     type         VARCHAR(10),
     title        VARCHAR(250),
@@ -38,46 +46,46 @@ CREATE TABLE netflix (
     description  VARCHAR(550)
 );
 
-Business Questions and SQL Solutions
 
-1. Number of Movies vs TV Shows
+⸻
 
-SELECT type, COUNT(*)
-FROM netflix
-GROUP BY type;
+💼 Business Problems & SQL Solutions
 
-2. Most Common Rating per Content Type
+1. Count the Number of Movies vs TV Shows
+
+SELECT type, COUNT(*) FROM netflix GROUP BY type;
+
+2. Most Common Rating for Movies and TV Shows
 
 WITH RatingCounts AS (
-    SELECT type, rating, COUNT(*) AS count
+    SELECT type, rating, COUNT(*) AS rating_count
     FROM netflix
     GROUP BY type, rating
 ),
-Ranked AS (
-    SELECT *, RANK() OVER (PARTITION BY type ORDER BY count DESC) AS rnk
+RankedRatings AS (
+    SELECT *, RANK() OVER (PARTITION BY type ORDER BY rating_count DESC) AS rnk
     FROM RatingCounts
 )
-SELECT type, rating AS most_common_rating
-FROM Ranked
+SELECT type, rating AS most_frequent_rating
+FROM RankedRatings
 WHERE rnk = 1;
 
-3. Movies Released in 2020
+3. List All Movies Released in 2020
 
 SELECT * FROM netflix WHERE release_year = 2020;
 
 4. Top 5 Countries with Most Content
 
-SELECT country, COUNT(*) AS count
+SELECT country, COUNT(*) AS total
 FROM (
     SELECT UNNEST(STRING_TO_ARRAY(country, ',')) AS country
     FROM netflix
 ) AS countries
-WHERE country IS NOT NULL
 GROUP BY country
-ORDER BY count DESC
+ORDER BY total DESC
 LIMIT 5;
 
-5. Longest Movie by Duration
+5. Longest Movie
 
 SELECT *
 FROM netflix
@@ -98,7 +106,7 @@ FROM (
     SELECT *, UNNEST(STRING_TO_ARRAY(director, ',')) AS dir
     FROM netflix
 ) AS t
-WHERE dir = 'Rajiv Chilaka';
+WHERE TRIM(dir) = 'Rajiv Chilaka';
 
 8. TV Shows with More Than 5 Seasons
 
@@ -107,22 +115,22 @@ FROM netflix
 WHERE type = 'TV Show'
   AND SPLIT_PART(duration, ' ', 1)::INT > 5;
 
-9. Content Count per Genre
+9. Count of Content in Each Genre
 
-SELECT genre, COUNT(*) AS count
+SELECT genre, COUNT(*) AS total
 FROM (
     SELECT UNNEST(STRING_TO_ARRAY(listed_in, ',')) AS genre
     FROM netflix
 ) AS genres
 GROUP BY genre;
 
-10. Top 5 Years with Highest Avg Content from India
+10. Top 5 Years with Highest Content Released in India
 
-SELECT release_year, COUNT(*) AS count
+SELECT release_year, COUNT(*) AS total_releases
 FROM netflix
 WHERE country = 'India'
 GROUP BY release_year
-ORDER BY count DESC
+ORDER BY total_releases DESC
 LIMIT 5;
 
 11. All Movies That Are Documentaries
@@ -131,9 +139,11 @@ SELECT *
 FROM netflix
 WHERE listed_in ILIKE '%Documentaries%';
 
-12. Content with No Director
+12. Content Without a Director
 
-SELECT * FROM netflix WHERE director IS NULL;
+SELECT *
+FROM netflix
+WHERE director IS NULL;
 
 13. Movies Featuring ‘Salman Khan’ in Last 10 Years
 
@@ -142,41 +152,54 @@ FROM netflix
 WHERE casts ILIKE '%Salman Khan%'
   AND release_year >= EXTRACT(YEAR FROM CURRENT_DATE) - 10;
 
-14. Top 10 Actors by Indian Movies
+14. Top 10 Actors in Indian Movies
 
-SELECT actor, COUNT(*) AS count
+SELECT actor, COUNT(*) AS appearances
 FROM (
     SELECT UNNEST(STRING_TO_ARRAY(casts, ',')) AS actor
     FROM netflix
     WHERE country = 'India'
 ) AS a
 GROUP BY actor
-ORDER BY count DESC
+ORDER BY appearances DESC
 LIMIT 10;
 
-15. Categorize Content by “Kill” or “Violence”
+15. Categorize Content as ‘Good’ or ‘Bad’ Based on Keywords
 
 SELECT category, COUNT(*)
 FROM (
-    SELECT CASE
-        WHEN description ILIKE '%kill%' OR description ILIKE '%violence%' THEN 'Bad'
-        ELSE 'Good'
-    END AS category
+    SELECT
+        CASE
+            WHEN description ILIKE '%kill%' OR description ILIKE '%violence%' THEN 'Bad'
+            ELSE 'Good'
+        END AS category
     FROM netflix
 ) AS categories
 GROUP BY category;
 
-Conclusion
-	•	Diversity: Netflix has a broad mix of genres, languages, and content types.
-	•	Data Insights: Ratings, genres, and countries give valuable signals for content strategy.
-	•	SQL Skills: This project demonstrates practical use of window functions, arrays, CTEs, type casting, and string manipulation in PostgreSQL.
 
-About Me
+⸻
 
-This project is part of my data analyst portfolio.
-	•	LinkedIn
-	•	YouTube
-	•	Instagram
-	•	Discord Community
+🧾 Conclusion
+	•	Netflix offers a large and diverse content library.
+	•	Analysis shows trends in content types, rating patterns, country-wise content creation, and sensitive content identification.
+	•	SQL is a powerful tool for drawing insights from real-world datasets.
 
-Feel free to fork, share, or use this project for your own learning!
+⸻
+
+👨‍💻 Author - Somu Sekhar
+
+This project showcases my practical SQL skills and PostgreSQL integration experience. Built on real-world data for interview, data analysis, and portfolio use.
+
+⸻
+
+📲 Let’s Connect!
+	•	LinkedIn: Your LinkedIn
+	•	GitHub: Your GitHub
+	•	Instagram: Your Instagram
+	•	YouTube: Your Channel
+	•	Portfolio: Your Website/Portfolio
+
+⸻
+
+Thank you for reading! Feel free to reach out for feedback, collaboration, or guidance.
