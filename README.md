@@ -1,3 +1,3 @@
 # Netflix_Data_Analysis
 
-[NETFLIX]()
+[NETFLIX](https://github.com/SomusekharJ/Netflix_Data_Analysis/blob/main/logo.png)
